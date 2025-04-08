@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/dawoonjang/STM32CubeIDE/workspace_1.18.0/stm32f446_digial_equalizer/Core/Src",
+      "program": "/Users/dawoonjang/STM32CubeIDE/workspace_1.18.0/stm32f446_digial_equalizer/Core/Src/build/Debug/outDebug"
+    }
+  ]
+}

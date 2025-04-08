@@ -1,0 +1,15 @@
+../Drivers/CMSIS/Include/core_cm4.h:1814:22:__NVIC_SetPriority	16	static
+../Core/Src/os.c:22:13:_insert_ready_task	24	static
+../Core/Src/os.c:43:13:_delete_ready_task	24	static
+../Core/Src/os.c:62:13:_insert_free_task	24	static
+../Core/Src/os.c:69:13:_insert_delay_task	24	static
+../Core/Src/os.c:87:13:_delete_delay_task	24	static
+../Core/Src/os.c:106:6:init_irq	16	static
+../Core/Src/os.c:120:6:init_os	16	static
+../Core/Src/os.c:136:6:start_os	8	static,ignoring_inline_asm
+../Core/Src/os.c:144:14:_allocate_stack	24	static
+../Core/Src/os.c:159:6:switching_task	16	static
+../Core/Src/os.c:171:10:get_free_task	16	static
+../Core/Src/os.c:191:9:create_task	40	static,ignoring_inline_asm
+../Core/Src/os.c:224:6:update_delayed_tasks	32	static,ignoring_inline_asm
+../Core/Src/os.c:252:6:delay_task	24	static,ignoring_inline_asm
