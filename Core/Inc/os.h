@@ -25,5 +25,6 @@ void init_os(void);
 void start_os(void);
 void update_delayed_tasks(void);
 void delay_task(const uint32_t timeout);
+uint8_t wait_signal(uint32_t *pdata, const uint32_t timeout);
 
 #endif

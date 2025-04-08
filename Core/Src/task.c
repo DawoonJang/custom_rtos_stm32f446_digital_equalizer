@@ -71,7 +71,5 @@ void led3_task_func(void *param)
             led_off(NUM_LED5);
             led_off(NUM_LED6);
         }
-
-        flag = !flag;
     }
 }
