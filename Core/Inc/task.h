@@ -27,7 +27,7 @@ typedef struct _task
     int prio;
     int origin_prio;
     uint32_t task_timeout;
-    uint8_t received_signal;
+    uint32_t received_signal;
 
     struct _task *next;
     struct _task *prev;

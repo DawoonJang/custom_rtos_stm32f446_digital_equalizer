@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "os.h"
+#include "switch.h"
 #include "task.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -56,6 +57,10 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint8_t task1_id;
+uint8_t task2_id;
+uint8_t task3_id;
+
 /* USER CODE END 0 */
 
 /**
@@ -91,8 +96,9 @@ int main(void)
 
     init_os();
 
-    create_task(led1_task_func, nullptr, PRIO_HIGHEST, 1024);
-    create_task(led2_task_func, nullptr, PRIO_HIGHEST, 1024);
+    task1_id = create_task(led1_task_func, nullptr, PRIO_HIGHEST + 1, 1024);
+    task2_id = create_task(led2_task_func, nullptr, PRIO_HIGHEST + 1, 1024);
+    task3_id = create_task(led3_task_func, nullptr, PRIO_HIGHEST, 1024);
 
     start_os();
 
@@ -223,6 +229,7 @@ static void MX_GPIO_Init(void)
 
     /* USER CODE BEGIN MX_GPIO_Init_2 */
     led_pin_init();
+    switch_pin_init();
     /* USER CODE END MX_GPIO_Init_2 */
 }
 

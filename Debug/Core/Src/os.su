@@ -13,3 +13,6 @@
 ../Core/Src/os.c:191:9:create_task	40	static,ignoring_inline_asm
 ../Core/Src/os.c:224:6:update_delayed_tasks	32	static,ignoring_inline_asm
 ../Core/Src/os.c:252:6:delay_task	24	static,ignoring_inline_asm
+../Core/Src/os.c:268:6:blocked_cur_task	16	static
+../Core/Src/os.c:278:9:wait_signal	32	static,ignoring_inline_asm
+../Core/Src/os.c:294:6:send_signal	32	static,ignoring_inline_asm

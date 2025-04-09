@@ -196,7 +196,7 @@ uint8_t create_task(void (*ptask_func)(void *), void *const para, const int16_t 
 
     if (free_task_ptr == nullptr || stack_size <= 0 || prio < 0)
     {
-        return FALSE;
+        return -1;
     }
 
     free_task_ptr->top_of_stack = (unsigned long *)_allocate_stack(stack_size);
@@ -204,7 +204,7 @@ uint8_t create_task(void (*ptask_func)(void *), void *const para, const int16_t 
     if (free_task_ptr->top_of_stack == nullptr)
     {
         _insert_free_task(free_task_ptr->task_id);
-        return FALSE;
+        return -1;
     }
 
     free_task_ptr->prio = free_task_ptr->origin_prio = prio;
@@ -218,7 +218,7 @@ uint8_t create_task(void (*ptask_func)(void *), void *const para, const int16_t 
     _insert_ready_task(free_task_ptr->task_id);
 
     enable_interrupts();
-    return TRUE;
+    return free_task_ptr->task_id;
 }
 
 void update_delayed_tasks(void)
@@ -289,4 +289,25 @@ uint8_t wait_signal(uint32_t *pdata, const uint32_t timeout)
     *pdata = current_task_ptr->received_signal;
 
     return (initial_blocked_reason == current_task_ptr->blocked_reason);
+}
+
+void send_signal(const uint8_t dest_task_id, const uint32_t signal)
+{
+    disable_interrupts();
+
+    ST_Task *pdest_task = &task_pool[dest_task_id];
+
+    if (pdest_task->state == TASK_BLOCKED && pdest_task->blocked_reason == BLOCKED_WAIT_SIGNAL)
+    {
+        pdest_task->received_signal = signal;
+        pdest_task->state = TASK_READY;
+        pdest_task->blocked_reason = BLOCKED_NONE;
+
+        _delete_delay_task(dest_task_id);
+        _insert_ready_task(dest_task_id);
+
+        trigger_context_switch();
+    }
+
+    enable_interrupts();
 }

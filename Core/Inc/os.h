@@ -26,5 +26,6 @@ void start_os(void);
 void update_delayed_tasks(void);
 void delay_task(const uint32_t timeout);
 uint8_t wait_signal(uint32_t *pdata, const uint32_t timeout);
+void send_signal(const uint8_t dest_task_id, const uint32_t signal);
 
 #endif
