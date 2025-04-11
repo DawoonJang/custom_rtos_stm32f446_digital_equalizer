@@ -192,11 +192,24 @@ uint8_t create_task(void (*ptask_func)(void *), void *const para, const int16_t 
 {
     disable_interrupts();
 
+    if (prio < PRIO_HIGHEST || prio > PRIO_LOWEST)
+    {
+        enable_interrupts();
+        return -1; // Invalid priority
+    }
+
+    if (stack_size <= 0)
+    {
+        enable_interrupts();
+        return -1; // Invalid stack size
+    }
+
     ST_Task *free_task_ptr = get_free_task();
 
-    if (free_task_ptr == nullptr || stack_size <= 0 || prio < 0)
+    if (free_task_ptr == nullptr)
     {
-        return -1;
+        enable_interrupts();
+        return -1; // No free task available
     }
 
     free_task_ptr->top_of_stack = (unsigned long *)_allocate_stack(stack_size);
@@ -204,17 +217,18 @@ uint8_t create_task(void (*ptask_func)(void *), void *const para, const int16_t 
     if (free_task_ptr->top_of_stack == nullptr)
     {
         _insert_free_task(free_task_ptr->task_id);
-        return -1;
+        enable_interrupts();
+        return -1; // Stack allocation failed
     }
 
     free_task_ptr->prio = free_task_ptr->origin_prio = prio;
     free_task_ptr->state = TASK_READY;
 
     free_task_ptr->top_of_stack -= 16;
-    free_task_ptr->top_of_stack[1] = 0x01010101; // r1 (디버깅용 dummy)
+    free_task_ptr->top_of_stack[1] = DEBUG_DUMMY_R1;
     free_task_ptr->top_of_stack[8] = (unsigned long)para;
     free_task_ptr->top_of_stack[14] = (unsigned long)ptask_func;
-    free_task_ptr->top_of_stack[15] = INIT_PSR;
+    free_task_ptr->top_of_stack[15] = INIT_PROCESSOR_STATE_REGISTER;
     _insert_ready_task(free_task_ptr->task_id);
 
     enable_interrupts();
@@ -275,7 +289,7 @@ void blocked_cur_task(const E_TaskBlockedReason blocked_reason, const uint32_t t
     _insert_delay_task(current_task_ptr->task_id);
 }
 
-uint8_t wait_signal(uint32_t *pdata, const uint32_t timeout)
+uint8_t wait_signal(uint32_t *const pdata, const uint32_t timeout)
 {
     E_TaskBlockedReason initial_blocked_reason;
 

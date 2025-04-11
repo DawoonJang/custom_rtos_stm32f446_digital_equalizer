@@ -2731,11 +2731,11 @@ void switch_pin_init(void)
     GPIO_InitStruct.Pin = GPIO_PIN_2;
  80012ea:	2304      	movs	r3, #4
  80012ec:	60fb      	str	r3, [r7, #12]
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING; // Trigger on falling edge (button press)
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
  80012ee:	f44f 1388 	mov.w	r3, #1114112	@ 0x110000
  80012f2:	613b      	str	r3, [r7, #16]
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
- 80012f4:	2301      	movs	r3, #1
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+ 80012f4:	2302      	movs	r3, #2
  80012f6:	617b      	str	r3, [r7, #20]
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
  80012f8:	f107 030c 	add.w	r3, r7, #12
@@ -2750,8 +2750,8 @@ void switch_pin_init(void)
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
  8001308:	f44f 1388 	mov.w	r3, #1114112	@ 0x110000
  800130c:	613b      	str	r3, [r7, #16]
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
- 800130e:	2301      	movs	r3, #1
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+ 800130e:	2302      	movs	r3, #2
  8001310:	617b      	str	r3, [r7, #20]
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
  8001312:	f107 030c 	add.w	r3, r7, #12
