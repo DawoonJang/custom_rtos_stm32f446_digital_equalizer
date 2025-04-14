@@ -10,7 +10,11 @@
 #define PRIO_LOWEST (10)
 #define NUM_PRIO (PRIO_LOWEST - PRIO_HIGHEST + 1)
 
+#define MAX_QUEUE 10
+
 #define STACK_SIZE (8 * 1024)
+#define QUEUE_STACK_SIZE (8 * 1024)
+
 #define INIT_PROCESSOR_STATE_REGISTER (0x01000000)
 #define DEBUG_DUMMY_R1 (0x01010101)
 #define TICK_MS (1)
@@ -19,6 +23,18 @@
 #define NUM_IRQS 43 // 0 ~ 42
 
 #define Macro_Set_Bit(dest, pos) ((dest) |= ((unsigned)0x1 << (pos)))
+
+typedef struct _queue
+{
+    int receiver_task_id;
+    char *front;
+    char *rear;
+    char *buffer;
+    char *bufferEnd;
+
+    int element_size;
+    int capacity;
+} ST_QUEUE;
 
 void switching_task(void);
 uint8_t create_task(void (*ptask_func)(void *), void *const para, const int16_t prio, const uint16_t stack_size);

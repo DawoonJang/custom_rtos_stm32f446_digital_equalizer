@@ -9,11 +9,16 @@ ST_TaskPool ready_task_pool[NUM_PRIO];
 ST_TaskPool free_task_pool;
 ST_TaskPool delay_task_pool;
 
-static char os_stack[STACK_SIZE] __attribute__((__aligned__(8)));
-static char *os_stack_ptr = os_stack + STACK_SIZE;
-static char *os_stack_limit = os_stack;
+ST_QUEUE queue_pool[MAX_QUEUE];
 
-static void _insert_ready_task(const uint8_t task_id);
+static uint8_t os_stack[STACK_SIZE] __attribute__((__aligned__(8)));
+static uint8_t *os_stack_ptr = os_stack + STACK_SIZE;
+static uint8_t *os_stack_limit = os_stack;
+
+static uint8_t os_queue_stack[QUEUE_STACK_SIZE] __attribute__((__aligned__(8)));
+
+static void
+_insert_ready_task(const uint8_t task_id);
 static void _delete_ready_task(const uint8_t task_id);
 static void _insert_free_task(const uint8_t task_id);
 static void _insert_delay_task(const uint8_t task_id);
@@ -141,7 +146,7 @@ void start_os(void)
     __asm__ volatile("svc #0");
 }
 
-static char *_allocate_stack(uint16_t stack_size)
+static uint8_t *_allocate_stack(uint16_t stack_size)
 {
     stack_size = (stack_size + 7) & ~0x7;
 
@@ -154,6 +159,24 @@ static char *_allocate_stack(uint16_t stack_size)
 
     os_stack_ptr = new_stack;
     return os_stack_ptr;
+}
+
+static uint8_t *_allocate_queue_momory(uint16_t queue_size)
+{
+    static uint8_t *queue_stack_ptr = os_queue_stack;
+    uint8_t *ret;
+
+    queue_size = (queue_size + 7) & ~0x7;
+
+    if (queue_stack_ptr + queue_size >= os_queue_stack + QUEUE_STACK_SIZE)
+    {
+        return nullptr;
+    }
+
+    ret = queue_stack_ptr;
+    queue_stack_ptr += queue_size;
+
+    return ret;
 }
 
 void switching_task(void)
@@ -322,6 +345,37 @@ void send_signal(const uint8_t dest_task_id, const uint32_t signal)
 
         trigger_context_switch();
     }
+
+    enable_interrupts();
+}
+
+uint32_t create_queue(const uint32_t capacity, const uint32_t element_size)
+{
+    disable_interrupts();
+    static uint8_t q_idx;
+    uint8_t q_id;
+
+    if (capacity <= 0 || element_size <= 0)
+    {
+        return -1;
+    }
+
+    q_id = q_idx++;
+
+    queue_pool[q_id].buffer = _allocate_queue_momory((capacity + 1) * element_size);
+
+    if (queue_pool[q_id].buffer == nullptr)
+    {
+        return -1;
+    }
+
+    queue_pool[q_id].element_size = element_size;
+    queue_pool[q_id].capacity = capacity;
+    queue_pool[q_id].front = queue_pool[q_id].rear = queue_pool[q_id].buffer;
+    queue_pool[q_id].bufferEnd = queue_pool[q_id].buffer + ((capacity + 1) * element_size);
+    queue_pool[q_id].receiver_task_id = current_task_ptr->task_id;
+
+    return q_id;
 
     enable_interrupts();
 }
