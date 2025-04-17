@@ -26,14 +26,14 @@
 
 typedef struct _queue
 {
-    int receiver_task_id;
-    char *front;
-    char *rear;
-    char *buffer;
-    char *bufferEnd;
+    uint32_t receiver_task_id;
+    uint8_t *front;
+    uint8_t *rear;
+    uint8_t *buffer;
+    uint8_t *buffer_end;
 
-    int element_size;
-    int capacity;
+    uint32_t element_size;
+    uint32_t capacity;
 } ST_QUEUE;
 
 void switching_task(void);

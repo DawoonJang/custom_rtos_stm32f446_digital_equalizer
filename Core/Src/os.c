@@ -1,5 +1,6 @@
 #include "os.h"
 #include "stm32f4xx_it.h"
+#include <string.h>
 
 ST_Task task_pool[MAX_TASK];
 
@@ -376,6 +377,48 @@ uint32_t create_queue(const uint32_t capacity, const uint32_t element_size)
     queue_pool[q_id].receiver_task_id = current_task_ptr->task_id;
 
     return q_id;
+
+    enable_interrupts();
+}
+static void _move_queue_ptr(const uint8_t *q_ptr, const uint32_t queue_id)
+{
+    const ST_QUEUE q = queue_pool[queue_id];
+
+    q_ptr += q.element_size;
+
+    if (q_ptr >= q.buffer_end)
+    {
+        q_ptr = q.buffer;
+    }
+}
+
+void enqueue(const uint32_t queue_id, const uint32_t const *pdata)
+{
+    disable_interrupts();
+    ST_Task *received_task_ptr;
+    ST_QUEUE *q_ptr = &queue_pool[queue_id];
+
+    if (q_ptr->front == nullptr
+        // ||is_queue_full()
+    )
+    {
+        enable_interrupts();
+        return;
+    }
+
+    received_task_ptr = &task_pool[q_ptr->receiver_task_id];
+    memcpy(q_ptr->rear, pdata, q_ptr->element_size);
+    _move_queue_ptr(q_ptr->rear, queue_id);
+
+    if (received_task_ptr->blocked_reason == BLOCKED_WAIT_SIGNAL)
+    {
+        received_task_ptr->state = TASK_READY;
+        received_task_ptr->blocked_reason = BLOCKED_NONE;
+
+        _delete_delay_task(received_task_ptr->task_id);
+        _insert_ready_task(received_task_ptr->task_id);
+        trigger_context_switch();
+    }
 
     enable_interrupts();
 }

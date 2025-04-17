@@ -23,9 +23,9 @@ typedef enum
 typedef struct _task
 {
     uint32_t *top_of_stack; // 8: pparam 14: pfunc 15:PSR
-    int task_id;
-    int prio;
-    int origin_prio;
+    uint32_t task_id;
+    uint32_t prio;
+    uint32_t origin_prio;
     uint32_t task_timeout;
     uint32_t received_signal;
 
