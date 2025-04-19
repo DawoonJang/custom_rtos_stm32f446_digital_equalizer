@@ -8,9 +8,9 @@
 
 typedef enum
 {
-    TASK_READY,
-    TASK_RUNNING,
-    TASK_BLOCKED
+    STATE_READY,
+    STATE_RUNNING,
+    STATE_BLOCKED
 } E_TaskState;
 
 typedef enum

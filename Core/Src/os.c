@@ -246,7 +246,7 @@ uint8_t create_task(void (*ptask_func)(void *), void *const para, const int16_t 
     }
 
     free_task_ptr->prio = free_task_ptr->origin_prio = prio;
-    free_task_ptr->state = TASK_READY;
+    free_task_ptr->state = STATE_READY;
 
     free_task_ptr->top_of_stack -= 16;
     free_task_ptr->top_of_stack[1] = DEBUG_DUMMY_R1;
@@ -274,7 +274,7 @@ void update_delayed_tasks(void)
 
         if (cur_task->task_timeout <= cur_tick)
         {
-            cur_task->state = TASK_READY;
+            cur_task->state = STATE_READY;
             cur_task->blocked_reason = BLOCKED_NONE;
 
             _delete_delay_task(cur_task->task_id);
@@ -291,7 +291,7 @@ void delay_task(const uint32_t timeout)
 {
     disable_interrupts();
 
-    current_task_ptr->state = TASK_BLOCKED;
+    current_task_ptr->state = STATE_BLOCKED;
     current_task_ptr->blocked_reason = BLOCKED_SLEEP;
     current_task_ptr->task_timeout = HAL_GetTick() + timeout;
 
@@ -305,7 +305,7 @@ void delay_task(const uint32_t timeout)
 
 void blocked_cur_task(const E_TaskBlockedReason blocked_reason, const uint32_t timeout)
 {
-    current_task_ptr->state = TASK_BLOCKED;
+    current_task_ptr->state = STATE_BLOCKED;
     current_task_ptr->blocked_reason = blocked_reason;
     current_task_ptr->task_timeout = HAL_GetTick() + timeout;
 
@@ -335,10 +335,10 @@ void send_signal(const uint8_t dest_task_id, const uint32_t signal)
 
     ST_Task *pdest_task = &task_pool[dest_task_id];
 
-    if (pdest_task->state == TASK_BLOCKED && pdest_task->blocked_reason == BLOCKED_WAIT_SIGNAL)
+    if (pdest_task->state == STATE_BLOCKED && pdest_task->blocked_reason == BLOCKED_WAIT_SIGNAL)
     {
         pdest_task->received_signal = signal;
-        pdest_task->state = TASK_READY;
+        pdest_task->state = STATE_READY;
         pdest_task->blocked_reason = BLOCKED_NONE;
 
         _delete_delay_task(dest_task_id);
@@ -373,7 +373,7 @@ uint32_t create_queue(const uint32_t capacity, const uint32_t element_size)
     queue_pool[q_id].element_size = element_size;
     queue_pool[q_id].capacity = capacity;
     queue_pool[q_id].front = queue_pool[q_id].rear = queue_pool[q_id].buffer;
-    queue_pool[q_id].bufferEnd = queue_pool[q_id].buffer + ((capacity + 1) * element_size);
+    queue_pool[q_id].buffer_end = queue_pool[q_id].buffer + ((capacity + 1) * element_size);
     queue_pool[q_id].receiver_task_id = current_task_ptr->task_id;
 
     return q_id;
@@ -392,7 +392,7 @@ static void _move_queue_ptr(const uint8_t *q_ptr, const uint32_t queue_id)
     }
 }
 
-void enqueue(const uint32_t queue_id, const uint32_t const *pdata)
+uint8_t enqueue(const uint32_t queue_id, const uint32_t const *pdata)
 {
     disable_interrupts();
     ST_Task *received_task_ptr;
@@ -403,7 +403,7 @@ void enqueue(const uint32_t queue_id, const uint32_t const *pdata)
     )
     {
         enable_interrupts();
-        return;
+        return FALSE;
     }
 
     received_task_ptr = &task_pool[q_ptr->receiver_task_id];
@@ -412,7 +412,7 @@ void enqueue(const uint32_t queue_id, const uint32_t const *pdata)
 
     if (received_task_ptr->blocked_reason == BLOCKED_WAIT_SIGNAL)
     {
-        received_task_ptr->state = TASK_READY;
+        received_task_ptr->state = STATE_READY;
         received_task_ptr->blocked_reason = BLOCKED_NONE;
 
         _delete_delay_task(received_task_ptr->task_id);
@@ -421,4 +421,51 @@ void enqueue(const uint32_t queue_id, const uint32_t const *pdata)
     }
 
     enable_interrupts();
+}
+
+uint8_t dequeue(const uint32_t queue_id, uint32_t *const pdata, const uint32_t timeout)
+{
+    ST_QUEUE *q_ptr = &queue_pool[queue_id];
+
+    disable_interrupts();
+
+    if (queue_id < 0 || queue_id >= MAX_QUEUE || q_ptr->buffer == nullptr || q_ptr->receiver_task_id != current_task_ptr->task_id)
+    {
+        enable_interrupts();
+
+        return FALSE;
+    }
+
+    if (q_ptr->front == q_ptr->rear)
+    {
+        enable_interrupts();
+
+        memcpy(pdata, q_ptr->front, q_ptr->element_size);
+        _move_queue_ptr(q_ptr->front, queue_id);
+        return TRUE;
+    }
+
+    current_task_ptr->task_timeout += timeout;
+    current_task_ptr->state = STATE_BLOCKED;
+    current_task_ptr->blocked_reason = BLOCKED_WAIT_SIGNAL;
+
+    enable_interrupts();
+
+    trigger_context_switch();
+
+    disable_interrupts();
+
+    if (current_task_ptr->blocked_reason != BLOCKED_NONE)
+    {
+        current_task_ptr->blocked_reason = BLOCKED_NONE;
+        enable_interrupts();
+
+        return FALSE;
+    }
+
+    memcpy(pdata, q_ptr->front, q_ptr->element_size);
+    _move_queue_ptr(q_ptr->front, queue_id);
+
+    enable_interrupts();
+    return TRUE;
 }
