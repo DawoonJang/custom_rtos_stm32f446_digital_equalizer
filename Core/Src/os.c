@@ -151,7 +151,7 @@ static uint8_t *_allocate_stack(uint16_t stack_size)
 {
     stack_size = (stack_size + 7) & ~0x7;
 
-    char *new_stack = os_stack_ptr - stack_size;
+    uint8_t *new_stack = os_stack_ptr - stack_size;
 
     if (new_stack < os_stack_limit)
     {
@@ -380,6 +380,7 @@ uint32_t create_queue(const uint32_t capacity, const uint32_t element_size)
 
     enable_interrupts();
 }
+
 static void _move_queue_ptr(const uint8_t *q_ptr, const uint32_t queue_id)
 {
     const ST_QUEUE q = queue_pool[queue_id];
@@ -392,7 +393,7 @@ static void _move_queue_ptr(const uint8_t *q_ptr, const uint32_t queue_id)
     }
 }
 
-uint8_t enqueue(const uint32_t queue_id, const uint32_t const *pdata)
+uint8_t enqueue(const uint32_t queue_id, const uint32_t *const pdata)
 {
     disable_interrupts();
     ST_Task *received_task_ptr;
@@ -421,6 +422,8 @@ uint8_t enqueue(const uint32_t queue_id, const uint32_t const *pdata)
     }
 
     enable_interrupts();
+
+    return TRUE;
 }
 
 uint8_t dequeue(const uint32_t queue_id, uint32_t *const pdata, const uint32_t timeout)
