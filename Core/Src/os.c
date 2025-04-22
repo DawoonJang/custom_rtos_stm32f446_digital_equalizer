@@ -18,14 +18,13 @@ static uint8_t *os_stack_limit = os_stack;
 
 static uint8_t os_queue_stack[QUEUE_STACK_SIZE] __attribute__((__aligned__(8)));
 
-static void
-_insert_ready_task(const uint8_t task_id);
-static void _delete_ready_task(const uint8_t task_id);
-static void _insert_free_task(const uint8_t task_id);
-static void _insert_delay_task(const uint8_t task_id);
-static void _delete_delay_task(const uint8_t task_id);
+static void s_insert_ready_task(uint8_t task_id);
+static void s_delete_ready_task(uint8_t task_id);
+static void s_insert_free_task(uint8_t task_id);
+static void s_insert_delay_task(uint8_t task_id);
+static void s_delete_delay_task(uint8_t task_id);
 
-static void _insert_ready_task(const uint8_t task_id)
+static void s_insert_ready_task(const uint8_t task_id)
 {
     ST_Task *ptask = &task_pool[task_id];
     ST_Task **head = &ready_task_pool[ptask->prio].head;
@@ -46,7 +45,7 @@ static void _insert_ready_task(const uint8_t task_id)
     }
 }
 
-static void _delete_ready_task(const uint8_t task_id)
+static void s_delete_ready_task(const uint8_t task_id)
 {
     ST_Task *ptask = &task_pool[task_id];
     ST_Task **head = &ready_task_pool[ptask->prio].head;
@@ -65,14 +64,14 @@ static void _delete_ready_task(const uint8_t task_id)
     ptask->prev = ptask->next = nullptr;
 }
 
-static void _insert_free_task(const uint8_t task_id)
+static void s_insert_free_task(const uint8_t task_id)
 {
     ST_Task *ptask = &task_pool[task_id];
     ptask->next = free_task_pool.head;
     free_task_pool.head = ptask;
 }
 
-static void _insert_delay_task(const uint8_t task_id)
+static void s_insert_delay_task(const uint8_t task_id)
 {
     ST_Task *ptask = &task_pool[task_id];
 
@@ -90,7 +89,7 @@ static void _insert_delay_task(const uint8_t task_id)
     ptask->next->prev = ptask;
 }
 
-static void _delete_delay_task(const uint8_t task_id)
+static void s_delete_delay_task(const uint8_t task_id)
 {
     ST_Task *ptask = &task_pool[task_id];
 
@@ -111,13 +110,11 @@ static void _delete_delay_task(const uint8_t task_id)
 
 void init_irq(void)
 {
-    uint32_t i;
-
     SCB->SHP[(uint8_t)SVCall_IRQn - 4] = 0xF << 4;
     SCB->SHP[(uint8_t)PendSV_IRQn - 4] = 0xF << 4;
 
     // Set IRQ priority
-    for (i = 0; i < NUM_IRQS; ++i)
+    for (uint32_t i = 0; i < NUM_IRQS; ++i)
     {
         NVIC_SetPriority((IRQn_Type)i, IRQ_PRIORITY);
     }
@@ -125,15 +122,13 @@ void init_irq(void)
 
 void init_os(void)
 {
-    int i;
-
     free_task_pool.head = nullptr;
     delay_task_pool.head = nullptr;
 
-    for (i = 0; i < MAX_TASK; i++)
+    for (int i = 0; i < MAX_TASK; i++)
     {
         task_pool[i].task_id = i;
-        _insert_free_task(task_pool[i].task_id);
+        s_insert_free_task(task_pool[i].task_id);
     }
 
     create_task(idle_task_func, nullptr, PRIO_LOWEST, 128);
@@ -147,7 +142,7 @@ void start_os(void)
     __asm__ volatile("svc #0");
 }
 
-static uint8_t *_allocate_stack(uint16_t stack_size)
+static uint8_t *s_allocate_stack(uint16_t stack_size)
 {
     stack_size = (stack_size + 7) & ~0x7;
 
@@ -162,10 +157,9 @@ static uint8_t *_allocate_stack(uint16_t stack_size)
     return os_stack_ptr;
 }
 
-static uint8_t *_allocate_queue_momory(uint16_t queue_size)
+static uint8_t *s_allocate_queue_momory(uint16_t queue_size)
 {
     static uint8_t *queue_stack_ptr = os_queue_stack;
-    uint8_t *ret;
 
     queue_size = (queue_size + 7) & ~0x7;
 
@@ -174,7 +168,7 @@ static uint8_t *_allocate_queue_momory(uint16_t queue_size)
         return nullptr;
     }
 
-    ret = queue_stack_ptr;
+    uint8_t *ret = queue_stack_ptr;
     queue_stack_ptr += queue_size;
 
     return ret;
@@ -194,14 +188,12 @@ void switching_task(void)
 
 ST_Task *get_free_task(void)
 {
-    ST_Task *task;
-
     if (free_task_pool.head == nullptr)
     {
         return nullptr;
     }
 
-    task = free_task_pool.head;
+    ST_Task *task = free_task_pool.head;
     free_task_pool.head = task->next;
 
     if (free_task_pool.head != nullptr)
@@ -236,24 +228,25 @@ uint8_t create_task(void (*ptask_func)(void *), void *const para, const int16_t 
         return -1; // No free task available
     }
 
-    free_task_ptr->top_of_stack = (unsigned long *)_allocate_stack(stack_size);
+    free_task_ptr->top_of_stack = (unsigned long *)s_allocate_stack(stack_size);
 
     if (free_task_ptr->top_of_stack == nullptr)
     {
-        _insert_free_task(free_task_ptr->task_id);
+        s_insert_free_task(free_task_ptr->task_id);
         enable_interrupts();
         return -1; // Stack allocation failed
     }
 
     free_task_ptr->prio = free_task_ptr->origin_prio = prio;
     free_task_ptr->state = STATE_READY;
+    free_task_ptr->blocked_reason = BLOCKED_NONE;
 
     free_task_ptr->top_of_stack -= 16;
     free_task_ptr->top_of_stack[1] = DEBUG_DUMMY_R1;
     free_task_ptr->top_of_stack[8] = (unsigned long)para;
     free_task_ptr->top_of_stack[14] = (unsigned long)ptask_func;
     free_task_ptr->top_of_stack[15] = INIT_PROCESSOR_STATE_REGISTER;
-    _insert_ready_task(free_task_ptr->task_id);
+    s_insert_ready_task(free_task_ptr->task_id);
 
     enable_interrupts();
     return free_task_ptr->task_id;
@@ -277,8 +270,8 @@ void update_delayed_tasks(void)
             cur_task->state = STATE_READY;
             cur_task->blocked_reason = BLOCKED_NONE;
 
-            _delete_delay_task(cur_task->task_id);
-            _insert_ready_task(cur_task->task_id);
+            s_delete_delay_task(cur_task->task_id);
+            s_insert_ready_task(cur_task->task_id);
         }
 
         cur_task = next_task;
@@ -295,8 +288,8 @@ void delay_task(const uint32_t timeout)
     current_task_ptr->blocked_reason = BLOCKED_SLEEP;
     current_task_ptr->task_timeout = HAL_GetTick() + timeout;
 
-    _delete_ready_task(current_task_ptr->task_id);
-    _insert_delay_task(current_task_ptr->task_id);
+    s_delete_ready_task(current_task_ptr->task_id);
+    s_insert_delay_task(current_task_ptr->task_id);
 
     trigger_context_switch();
 
@@ -309,20 +302,18 @@ void blocked_cur_task(const E_TaskBlockedReason blocked_reason, const uint32_t t
     current_task_ptr->blocked_reason = blocked_reason;
     current_task_ptr->task_timeout = HAL_GetTick() + timeout;
 
-    _delete_ready_task(current_task_ptr->task_id);
-    _insert_delay_task(current_task_ptr->task_id);
+    s_delete_ready_task(current_task_ptr->task_id);
+    s_insert_delay_task(current_task_ptr->task_id);
 }
 
 uint8_t wait_signal(uint32_t *const pdata, const uint32_t timeout)
 {
-    E_TaskBlockedReason initial_blocked_reason;
-
     disable_interrupts();
     blocked_cur_task(BLOCKED_WAIT_SIGNAL, timeout);
     trigger_context_switch();
     enable_interrupts();
 
-    initial_blocked_reason = current_task_ptr->blocked_reason;
+    E_TaskBlockedReason initial_blocked_reason = current_task_ptr->blocked_reason;
     current_task_ptr->blocked_reason = BLOCKED_NONE;
     *pdata = current_task_ptr->received_signal;
 
@@ -341,8 +332,8 @@ void send_signal(const uint8_t dest_task_id, const uint32_t signal)
         pdest_task->state = STATE_READY;
         pdest_task->blocked_reason = BLOCKED_NONE;
 
-        _delete_delay_task(dest_task_id);
-        _insert_ready_task(dest_task_id);
+        s_delete_delay_task(dest_task_id);
+        s_insert_ready_task(dest_task_id);
 
         trigger_context_switch();
     }
@@ -354,16 +345,15 @@ uint32_t create_queue(const uint32_t capacity, const uint32_t element_size)
 {
     disable_interrupts();
     static uint8_t q_idx;
-    uint8_t q_id;
 
     if (capacity <= 0 || element_size <= 0)
     {
         return -1;
     }
 
-    q_id = q_idx++;
+    uint8_t q_id = q_idx++;
 
-    queue_pool[q_id].buffer = _allocate_queue_momory((capacity + 1) * element_size);
+    queue_pool[q_id].buffer = s_allocate_queue_momory((capacity + 1) * element_size);
 
     if (queue_pool[q_id].buffer == nullptr)
     {
@@ -381,22 +371,21 @@ uint32_t create_queue(const uint32_t capacity, const uint32_t element_size)
     enable_interrupts();
 }
 
-static void _move_queue_ptr(const uint8_t *q_ptr, const uint32_t queue_id)
+static void s_move_queue_ptr(uint8_t **q_ptr, const uint32_t queue_id)
 {
     const ST_QUEUE q = queue_pool[queue_id];
 
-    q_ptr += q.element_size;
+    *q_ptr += q.element_size;
 
-    if (q_ptr >= q.buffer_end)
+    if (*q_ptr >= q.buffer_end)
     {
-        q_ptr = q.buffer;
+        *q_ptr = q.buffer;
     }
 }
 
 uint8_t enqueue(const uint32_t queue_id, const uint32_t *const pdata)
 {
     disable_interrupts();
-    ST_Task *received_task_ptr;
     ST_QUEUE *q_ptr = &queue_pool[queue_id];
 
     if (q_ptr->front == nullptr
@@ -407,17 +396,17 @@ uint8_t enqueue(const uint32_t queue_id, const uint32_t *const pdata)
         return FALSE;
     }
 
-    received_task_ptr = &task_pool[q_ptr->receiver_task_id];
+    ST_Task *received_task_ptr = &task_pool[q_ptr->receiver_task_id];
     memcpy(q_ptr->rear, pdata, q_ptr->element_size);
-    _move_queue_ptr(q_ptr->rear, queue_id);
+    s_move_queue_ptr(&q_ptr->rear, queue_id);
 
     if (received_task_ptr->blocked_reason == BLOCKED_WAIT_SIGNAL)
     {
         received_task_ptr->state = STATE_READY;
         received_task_ptr->blocked_reason = BLOCKED_NONE;
 
-        _delete_delay_task(received_task_ptr->task_id);
-        _insert_ready_task(received_task_ptr->task_id);
+        s_delete_delay_task(received_task_ptr->task_id);
+        s_insert_ready_task(received_task_ptr->task_id);
         trigger_context_switch();
     }
 
@@ -432,7 +421,7 @@ uint8_t dequeue(const uint32_t queue_id, uint32_t *const pdata, const uint32_t t
 
     disable_interrupts();
 
-    if (queue_id < 0 || queue_id >= MAX_QUEUE || q_ptr->buffer == nullptr || q_ptr->receiver_task_id != current_task_ptr->task_id)
+    if (queue_id >= MAX_QUEUE || q_ptr->buffer == nullptr || q_ptr->receiver_task_id != current_task_ptr->task_id)
     {
         enable_interrupts();
 
@@ -444,7 +433,7 @@ uint8_t dequeue(const uint32_t queue_id, uint32_t *const pdata, const uint32_t t
         enable_interrupts();
 
         memcpy(pdata, q_ptr->front, q_ptr->element_size);
-        _move_queue_ptr(q_ptr->front, queue_id);
+        s_move_queue_ptr(&q_ptr->front, queue_id);
         return TRUE;
     }
 
@@ -467,7 +456,7 @@ uint8_t dequeue(const uint32_t queue_id, uint32_t *const pdata, const uint32_t t
     }
 
     memcpy(pdata, q_ptr->front, q_ptr->element_size);
-    _move_queue_ptr(q_ptr->front, queue_id);
+    s_move_queue_ptr(&q_ptr->front, queue_id);
 
     enable_interrupts();
     return TRUE;
