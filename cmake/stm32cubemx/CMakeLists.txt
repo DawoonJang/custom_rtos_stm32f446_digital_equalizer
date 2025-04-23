@@ -20,7 +20,8 @@ set(MX_Include_Dirs
 # STM32CubeMX generated application sources
 file(GLOB MX_Application_Src
     ${CMAKE_SOURCE_DIR}/Core/Src/*.c
-    ${CMAKE_SOURCE_DIR}/Core/Startup/*.s
+	${CMAKE_SOURCE_DIR}/Core/Src/*.s
+	${CMAKE_SOURCE_DIR}/Core/Startup/*.s
 )
 
 # STM32 HAL/LL Drivers
