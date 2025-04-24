@@ -10,7 +10,8 @@ ST_TaskPool ready_task_pool[NUM_PRIO];
 ST_TaskPool free_task_pool;
 ST_TaskPool delay_task_pool;
 
-ST_QUEUE queue_pool[MAX_QUEUE];
+static ST_QUEUE queue_pool[MAX_QUEUE];
+static ST_MUTEX mutex_pool[MAX_MUTEX];
 
 static uint8_t os_stack[STACK_SIZE] __attribute__((__aligned__(8)));
 static uint8_t *os_stack_ptr = os_stack + STACK_SIZE;
@@ -18,10 +19,15 @@ static uint8_t *os_stack_limit = os_stack;
 
 static uint8_t os_queue_stack[QUEUE_STACK_SIZE] __attribute__((__aligned__(8)));
 
+
 static void s_insert_ready_task(uint8_t task_id);
+
 static void s_delete_ready_task(uint8_t task_id);
+
 static void s_insert_free_task(uint8_t task_id);
+
 static void s_insert_delay_task(uint8_t task_id);
+
 static void s_delete_delay_task(uint8_t task_id);
 
 static void s_insert_ready_task(const uint8_t task_id)
@@ -110,13 +116,13 @@ static void s_delete_delay_task(const uint8_t task_id)
 
 void init_irq(void)
 {
-    SCB->SHP[(uint8_t)SVCall_IRQn - 4] = 0xF << 4;
-    SCB->SHP[(uint8_t)PendSV_IRQn - 4] = 0xF << 4;
+    SCB->SHP[(uint8_t) SVCall_IRQn - 4] = 0xF << 4;
+    SCB->SHP[(uint8_t) PendSV_IRQn - 4] = 0xF << 4;
 
     // Set IRQ priority
     for (uint32_t i = 0; i < NUM_IRQS; ++i)
     {
-        NVIC_SetPriority((IRQn_Type)i, IRQ_PRIORITY);
+        NVIC_SetPriority((IRQn_Type) i, IRQ_PRIORITY);
     }
 }
 
@@ -228,7 +234,7 @@ uint8_t create_task(void (*ptask_func)(void *), void *const para, const int16_t 
         return -1; // No free task available
     }
 
-    free_task_ptr->top_of_stack = (unsigned long *)s_allocate_stack(stack_size);
+    free_task_ptr->top_of_stack = (unsigned long *) s_allocate_stack(stack_size);
 
     if (free_task_ptr->top_of_stack == nullptr)
     {
@@ -243,8 +249,8 @@ uint8_t create_task(void (*ptask_func)(void *), void *const para, const int16_t 
 
     free_task_ptr->top_of_stack -= 16;
     free_task_ptr->top_of_stack[1] = DEBUG_DUMMY_R1;
-    free_task_ptr->top_of_stack[8] = (unsigned long)para;
-    free_task_ptr->top_of_stack[14] = (unsigned long)ptask_func;
+    free_task_ptr->top_of_stack[8] = (unsigned long) para;
+    free_task_ptr->top_of_stack[14] = (unsigned long) ptask_func;
     free_task_ptr->top_of_stack[15] = INIT_PROCESSOR_STATE_REGISTER;
     s_insert_ready_task(free_task_ptr->task_id);
 
@@ -460,4 +466,124 @@ uint8_t dequeue(const uint32_t queue_id, uint32_t *const pdata, const uint32_t t
 
     enable_interrupts();
     return TRUE;
+}
+
+uint8_t create_mutex(void)
+{
+    disable_interrupts();
+
+    static uint8_t mutex_id = 0;
+
+    if (mutex_id > MAX_MUTEX)
+    {
+        return -1;
+    }
+
+    enable_interrupts();
+
+    return mutex_id++;
+}
+
+void lock_mutex(const uint8_t mutex_id)
+{
+    disable_interrupts();
+
+    ST_MUTEX *mutex_ptr = &mutex_pool[mutex_id];
+
+    if (mutex_ptr->is_lock)
+    {
+        mutex_ptr->is_lock = FALSE;
+        mutex_ptr->owner_id = current_task_ptr->task_id;
+
+        enable_interrupts();
+        return;
+    }
+
+    mutex_ptr->waiting_task[current_task_ptr->task_id] = TRUE;
+    blocked_cur_task(BLOCKED_MUTEX_LOCK, 0);
+    s_delete_ready_task(current_task_ptr->task_id);
+
+    ST_Task *owner_task_ptr = &task_pool[mutex_ptr->owner_id];
+
+    if (owner_task_ptr->prio > current_task_ptr->prio)
+    {
+        /* Priority Inheritance */
+        if (owner_task_ptr->state == STATE_READY)
+        {
+            s_delete_ready_task(owner_task_ptr->task_id);
+            owner_task_ptr->prio = current_task_ptr->prio;
+            s_insert_ready_task(owner_task_ptr->task_id);
+        }
+        else
+        {
+            owner_task_ptr->prio = current_task_ptr->prio;
+        }
+    }
+
+    trigger_context_switch();
+    enable_interrupts();
+}
+
+void unlock_mutex(const uint8_t mutex_id)
+{
+    disable_interrupts();
+
+    ST_MUTEX *mutex_ptr = &mutex_pool[mutex_id];
+    uint8_t trigger_flag = FALSE;
+
+    if (mutex_ptr->owner_id != current_task_ptr->task_id)
+    {
+        enable_interrupts();
+        return;
+    }
+
+    mutex_ptr->is_lock = TRUE;
+    mutex_ptr->owner_id = -1;
+
+    // Priority restore
+    if (current_task_ptr->prio != current_task_ptr->origin_prio)
+    {
+        s_delete_ready_task(current_task_ptr->task_id);
+        current_task_ptr->prio = current_task_ptr->origin_prio;
+        s_insert_ready_task(current_task_ptr->task_id);
+
+        trigger_flag = TRUE;
+    }
+
+    uint32_t highest_prio = PRIO_LOWEST + 1;
+    ST_Task *highest_waiting_task_ptr = nullptr;
+
+    for (int8_t i = 0; i < MAX_TASK; i++)
+    {
+        if (mutex_ptr->waiting_task[i])
+        {
+            highest_waiting_task_ptr = &task_pool[mutex_ptr->waiting_task[i]];
+
+            if (highest_waiting_task_ptr->prio < highest_prio)
+            {
+                highest_prio = highest_waiting_task_ptr->prio;
+            }
+        }
+    }
+
+    if (highest_waiting_task_ptr != nullptr)
+    {
+        mutex_ptr->is_lock = FALSE;
+        mutex_ptr->owner_id = highest_waiting_task_ptr->task_id;
+        mutex_ptr->waiting_task[highest_waiting_task_ptr->task_id] = FALSE;
+
+        highest_waiting_task_ptr->state = STATE_READY;
+        highest_waiting_task_ptr->blocked_reason = BLOCKED_NONE;
+
+        s_insert_ready_task(highest_waiting_task_ptr->task_id);
+
+        trigger_flag = TRUE;
+    }
+
+    if (trigger_flag)
+    {
+        trigger_context_switch();
+    }
+
+    enable_interrupts();
 }

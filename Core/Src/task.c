@@ -53,6 +53,7 @@ void led2_task_func(void *param)
         delay_task(1000);
     }
 }
+
 void led3_task_func(void *param)
 {
     uint32_t signal = 0;

@@ -11,6 +11,7 @@
 #define NUM_PRIO (PRIO_LOWEST - PRIO_HIGHEST + 1)
 
 #define MAX_QUEUE 10
+#define MAX_MUTEX 10
 
 #define STACK_SIZE (8 * 1024)
 #define QUEUE_STACK_SIZE (8 * 1024)
@@ -36,13 +37,27 @@ typedef struct _queue
     uint32_t capacity;
 } ST_QUEUE;
 
+typedef struct _mutex
+{
+    uint8_t is_lock;
+    uint8_t owner_id;
+    uint8_t waiting_task[MAX_TASK];
+} ST_MUTEX;
+
 void switching_task(void);
+
 uint8_t create_task(void (*ptask_func)(void *), void *const para, const int16_t prio, const uint16_t stack_size);
+
 void init_os(void);
+
 void start_os(void);
+
 void update_delayed_tasks(void);
+
 void delay_task(const uint32_t timeout);
+
 uint8_t wait_signal(uint32_t *pdata, const uint32_t timeout);
+
 void send_signal(const uint8_t dest_task_id, const uint32_t signal);
 
 #endif

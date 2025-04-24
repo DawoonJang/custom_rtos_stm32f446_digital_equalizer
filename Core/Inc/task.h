@@ -17,7 +17,8 @@ typedef enum
 {
     BLOCKED_NONE,
     BLOCKED_SLEEP,
-    BLOCKED_WAIT_SIGNAL
+    BLOCKED_WAIT_SIGNAL,
+    BLOCKED_MUTEX_LOCK,
 } E_TaskBlockedReason;
 
 typedef struct _task
@@ -43,7 +44,9 @@ typedef struct _task_pool
 void idle_task_func(void *param);
 
 void led1_task_func(void *param);
+
 void led2_task_func(void *param);
+
 void led3_task_func(void *param);
 
 #endif
