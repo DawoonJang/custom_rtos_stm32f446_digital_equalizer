@@ -1,6 +1,9 @@
 #include "os.h"
+#include "lcd.h"
+
 #include "stm32f4xx_it.h"
 #include <string.h>
+
 
 ST_Task task_pool[MAX_TASK];
 
@@ -144,6 +147,7 @@ void start_os(void)
 {
     switching_task();
     init_irq();
+    tft_glcd_pin_init();
 
     __asm__ volatile("svc #0");
 }

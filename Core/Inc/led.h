@@ -23,7 +23,9 @@
 #define NUM_LED8 2
 
 void led_pin_init(void);
-void led_off(unsigned int led);
-void led_on(unsigned int led);
+
+void led_off(uint8_t led);
+
+void led_on(uint8_t led);
 
 #endif

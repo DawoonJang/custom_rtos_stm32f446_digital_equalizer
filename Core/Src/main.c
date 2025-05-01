@@ -21,6 +21,8 @@
 #include "os.h"
 #include "switch.h"
 #include "task.h"
+#include "ILI9341_STM32_Driver.h"
+#include "ILI9341_GFX.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -49,8 +51,11 @@ UART_HandleTypeDef huart2;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+
 static void MX_GPIO_Init(void);
+
 static void MX_USART2_UART_Init(void);
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -61,6 +66,11 @@ uint8_t task1_id;
 uint8_t task2_id;
 uint8_t task3_id;
 
+RNG_HandleTypeDef hrng;
+
+SPI_HandleTypeDef hspi1;
+DMA_HandleTypeDef hdma_spi1_tx;
+
 /* USER CODE END 0 */
 
 /**
@@ -69,7 +79,6 @@ uint8_t task3_id;
  */
 int main(void)
 {
-
     /* USER CODE BEGIN 1 */
     /* USER CODE END 1 */
 
@@ -168,7 +177,6 @@ void SystemClock_Config(void)
  */
 static void MX_USART2_UART_Init(void)
 {
-
     /* USER CODE BEGIN USART2_Init 0 */
 
     /* USER CODE END USART2_Init 0 */
