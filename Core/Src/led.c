@@ -22,7 +22,7 @@ void led_pin_init(void)
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }
 
-void led_on(unsigned int led)
+void led_on(uint8_t led)
 {
     disable_interrupts();
 
@@ -38,7 +38,7 @@ void led_on(unsigned int led)
     enable_interrupts();
 }
 
-void led_off(unsigned int led)
+void led_off(uint8_t led)
 {
     disable_interrupts();
 

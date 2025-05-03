@@ -7,7 +7,7 @@
 
 #include "stm32f4xx_hal.h"
 
-extern SPI_HandleTypeDef hspi1;
+// extern SPI_HandleTypeDef hspi1;
 
 #define ILI9341_SCREEN_HEIGHT 	240
 #define ILI9341_SCREEN_WIDTH 	320

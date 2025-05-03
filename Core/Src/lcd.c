@@ -62,7 +62,7 @@ void ili9341_write_command(uint8_t cmd)
 {
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET); // RS = 0 (Command)
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); // CS = 0
-    HAL_SPI_FlushRxFifo(&hspi2, &cmd, 1, HAL_MAX_DELAY);
+    // HAL_SPI_FlushRxFifo(&hspi2, &cmd, 1, HAL_MAX_DELAY);
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); // CS = 1
 }
 
@@ -70,6 +70,6 @@ void ili9341_write_data(uint8_t data)
 {
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET); // RS = 1 (Data)
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); // CS = 0
-    HAL_SPI_Transmit(&hspi2, &data, 1, HAL_MAX_DELAY);
+    // HAL_SPI_Transmit(&hspi2, &data, 1, HAL_MAX_DELAY);
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); // CS = 1
 }

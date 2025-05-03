@@ -147,7 +147,7 @@ void start_os(void)
 {
     switching_task();
     init_irq();
-    tft_glcd_pin_init();
+    // tft_glcd_pin_init();
 
     __asm__ volatile("svc #0");
 }
