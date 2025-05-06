@@ -18,11 +18,14 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
 #include "stm32f4xx_it.h"
+#include "main.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "os.h"
+
+extern uint8_t task3_id;
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -65,139 +68,146 @@
 /*           Cortex-M4 Processor Interruption and Exception Handlers          */
 /******************************************************************************/
 /**
-  * @brief This function handles Non maskable interrupt.
-  */
+ * @brief This function handles Non maskable interrupt.
+ */
 void NMI_Handler(void)
 {
-  /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
+	 /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
 
-  /* USER CODE END NonMaskableInt_IRQn 0 */
-  /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-  while (1)
-  {
-  }
-  /* USER CODE END NonMaskableInt_IRQn 1 */
+	 /* USER CODE END NonMaskableInt_IRQn 0 */
+	 /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
+	 while (1)
+	 {
+	 }
+	 /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
 /**
-  * @brief This function handles Hard fault interrupt.
-  */
+ * @brief This function handles Hard fault interrupt.
+ */
 void HardFault_Handler(void)
 {
-  /* USER CODE BEGIN HardFault_IRQn 0 */
+	 /* USER CODE BEGIN HardFault_IRQn 0 */
 
-  /* USER CODE END HardFault_IRQn 0 */
-  while (1)
-  {
-    /* USER CODE BEGIN W1_HardFault_IRQn 0 */
-    /* USER CODE END W1_HardFault_IRQn 0 */
-  }
+	 /* USER CODE END HardFault_IRQn 0 */
+	 while (1)
+	 {
+		  /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+		  /* USER CODE END W1_HardFault_IRQn 0 */
+	 }
 }
 
 /**
-  * @brief This function handles Memory management fault.
-  */
+ * @brief This function handles Memory management fault.
+ */
 void MemManage_Handler(void)
 {
-  /* USER CODE BEGIN MemoryManagement_IRQn 0 */
+	 /* USER CODE BEGIN MemoryManagement_IRQn 0 */
 
-  /* USER CODE END MemoryManagement_IRQn 0 */
-  while (1)
-  {
-    /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
-    /* USER CODE END W1_MemoryManagement_IRQn 0 */
-  }
+	 /* USER CODE END MemoryManagement_IRQn 0 */
+	 while (1)
+	 {
+		  /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
+		  /* USER CODE END W1_MemoryManagement_IRQn 0 */
+	 }
 }
 
 /**
-  * @brief This function handles Pre-fetch fault, memory access fault.
-  */
+ * @brief This function handles Pre-fetch fault, memory access fault.
+ */
 void BusFault_Handler(void)
 {
-  /* USER CODE BEGIN BusFault_IRQn 0 */
+	 /* USER CODE BEGIN BusFault_IRQn 0 */
 
-  /* USER CODE END BusFault_IRQn 0 */
-  while (1)
-  {
-    /* USER CODE BEGIN W1_BusFault_IRQn 0 */
-    /* USER CODE END W1_BusFault_IRQn 0 */
-  }
+	 /* USER CODE END BusFault_IRQn 0 */
+	 while (1)
+	 {
+		  /* USER CODE BEGIN W1_BusFault_IRQn 0 */
+		  /* USER CODE END W1_BusFault_IRQn 0 */
+	 }
 }
 
 /**
-  * @brief This function handles Undefined instruction or illegal state.
-  */
+ * @brief This function handles Undefined instruction or illegal state.
+ */
 void UsageFault_Handler(void)
 {
-  /* USER CODE BEGIN UsageFault_IRQn 0 */
+	 /* USER CODE BEGIN UsageFault_IRQn 0 */
 
-  /* USER CODE END UsageFault_IRQn 0 */
-  while (1)
-  {
-    /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
-    /* USER CODE END W1_UsageFault_IRQn 0 */
-  }
+	 /* USER CODE END UsageFault_IRQn 0 */
+	 while (1)
+	 {
+		  /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
+		  /* USER CODE END W1_UsageFault_IRQn 0 */
+	 }
 }
 
 /**
-  * @brief This function handles System service call via SWI instruction.
-  */
-__WEAK void SVC_Handler(void)
+ * @brief This function handles System service call via SWI instruction.
+ */
+void SVC_Handler(void)
 {
-    __asm volatile("cpsid i\n"
-                   "ldr r3, =current_task_ptr\n"
-                   "ldr r1, [r3]\n"
-                   "ldr r0, [r1]\n"
-                   "ldmia r0!, {r4-r11}\n"
-                   "msr psp, r0\n"
-                   "orr lr, #0xd\n" // Thread 모드에서 복귀
-                   "cpsie i\n"      // 인터럽트 활성화
-                   "bx lr\n");
+	 /* USER CODE BEGIN SVCall_IRQn 0 */
+
+	 __asm volatile("cpsid i\n"
+						 "ldr r3, =current_task_ptr\n"
+						 "ldr r1, [r3]\n"
+						 "ldr r0, [r1]\n"
+						 "ldmia r0!, {r4-r11}\n"
+						 "msr psp, r0\n"
+						 "orr lr, #0xd\n" // Thread 모드에서 복귀
+						 "cpsie i\n"		// 인터럽트 활성화
+						 "bx lr\n");
+
+	 /* USER CODE END SVCall_IRQn 0 */
+	 /* USER CODE BEGIN SVCall_IRQn 1 */
+
+	 /* USER CODE END SVCall_IRQn 1 */
 }
 
 /**
-  * @brief This function handles Debug monitor.
-  */
+ * @brief This function handles Debug monitor.
+ */
 void DebugMon_Handler(void)
 {
-  /* USER CODE BEGIN DebugMonitor_IRQn 0 */
+	 /* USER CODE BEGIN DebugMonitor_IRQn 0 */
 
-  /* USER CODE END DebugMonitor_IRQn 0 */
-  /* USER CODE BEGIN DebugMonitor_IRQn 1 */
+	 /* USER CODE END DebugMonitor_IRQn 0 */
+	 /* USER CODE BEGIN DebugMonitor_IRQn 1 */
 
-  /* USER CODE END DebugMonitor_IRQn 1 */
+	 /* USER CODE END DebugMonitor_IRQn 1 */
 }
 
 /**
-  * @brief This function handles Pendable request for system service.
-  */
+ * @brief This function handles Pendable request for system service.
+ */
 __WEAK void PendSV_Handler(void)
 {
-  /* USER CODE BEGIN PendSV_IRQn 0 */
+	 /* USER CODE BEGIN PendSV_IRQn 0 */
 
-  /* USER CODE END PendSV_IRQn 0 */
-  /* USER CODE BEGIN PendSV_IRQn 1 */
+	 /* USER CODE END PendSV_IRQn 0 */
+	 /* USER CODE BEGIN PendSV_IRQn 1 */
 
-  /* USER CODE END PendSV_IRQn 1 */
+	 /* USER CODE END PendSV_IRQn 1 */
 }
 
 /**
-  * @brief This function handles System tick timer.
-  */
+ * @brief This function handles System tick timer.
+ */
 void SysTick_Handler(void)
 {
-  /* USER CODE BEGIN SysTick_IRQn 0 */
-  disable_interrupts();
+	 /* USER CODE BEGIN SysTick_IRQn 0 */
+	 disable_interrupts();
 
-  /* USER CODE END SysTick_IRQn 0 */
-  HAL_IncTick();
-  /* USER CODE BEGIN SysTick_IRQn 1 */
+	 /* USER CODE END SysTick_IRQn 0 */
+	 HAL_IncTick();
+	 /* USER CODE BEGIN SysTick_IRQn 1 */
 
-  update_delayed_tasks();
+	 update_delayed_tasks();
 
-  trigger_context_switch();
-  enable_interrupts();
-  /* USER CODE END SysTick_IRQn 1 */
+	 trigger_context_switch();
+	 enable_interrupts();
+	 /* USER CODE END SysTick_IRQn 1 */
 }
 
 /******************************************************************************/
@@ -207,5 +217,56 @@ void SysTick_Handler(void)
 /* please refer to the startup file (startup_stm32f4xx.s).                    */
 /******************************************************************************/
 
+/**
+ * @brief This function handles EXTI line 2 interrupt.
+ */
+void EXTI2_IRQHandler(void)
+{
+	 /* USER CODE BEGIN EXTI2_IRQn 0 */
+
+	 /* USER CODE END EXTI2_IRQn 0 */
+	 HAL_GPIO_EXTI_IRQHandler(SWITCH1_Pin);
+	 /* USER CODE BEGIN EXTI2_IRQn 1 */
+
+	 /* USER CODE END EXTI2_IRQn 1 */
+}
+
+/**
+ * @brief This function handles EXTI line 4 interrupt.
+ */
+void EXTI4_IRQHandler(void)
+{
+	 /* USER CODE BEGIN EXTI4_IRQn 0 */
+
+	 /* USER CODE END EXTI4_IRQn 0 */
+	 HAL_GPIO_EXTI_IRQHandler(SWITCH2_Pin);
+	 /* USER CODE BEGIN EXTI4_IRQn 1 */
+	 /* USER CODE END EXTI4_IRQn 1 */
+}
+
 /* USER CODE BEGIN 1 */
+
+void HAL_GPIO_EXTI_Callback(const uint16_t GPIO_Pin)
+{
+	 switch (GPIO_Pin)
+	 {
+		  case SWITCH1_Pin:
+				if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_2) == GPIO_PIN_SET)
+				{
+					 send_signal(task3_id, 1);
+				}
+				break;
+
+		  case SWITCH2_Pin:
+				if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_4) == GPIO_PIN_SET)
+				{
+					 send_signal(task3_id, 2);
+				}
+				break;
+
+		  default:
+				break;
+	 }
+}
+
 /* USER CODE END 1 */

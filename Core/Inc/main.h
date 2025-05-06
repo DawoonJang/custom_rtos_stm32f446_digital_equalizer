@@ -63,10 +63,14 @@ void Error_Handler(void);
 #define TFT_RS_GPIO_Port GPIOC
 #define TFT_LED_Pin GPIO_PIN_2
 #define TFT_LED_GPIO_Port GPIOC
+#define LED7_Pin GPIO_PIN_3
+#define LED7_GPIO_Port GPIOC
 #define SWITCH2_Pin GPIO_PIN_4
 #define SWITCH2_GPIO_Port GPIOA
+#define SWITCH2_EXTI_IRQn EXTI4_IRQn
 #define SWITCH1_Pin GPIO_PIN_2
 #define SWITCH1_GPIO_Port GPIOD
+#define SWITCH1_EXTI_IRQn EXTI2_IRQn
 
 /* USER CODE BEGIN Private defines */
 
