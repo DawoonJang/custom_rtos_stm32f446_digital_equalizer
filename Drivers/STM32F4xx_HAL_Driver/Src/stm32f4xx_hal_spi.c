@@ -2490,7 +2490,7 @@ void HAL_SPI_IRQHandler(SPI_HandleTypeDef *hspi)
   *               the configuration information for SPI module.
   * @retval None
   */
-__weak void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+__weak void HAL_SPI_TxCpltCallback(const SPI_HandleTypeDef *hspi)
 {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(hspi);
