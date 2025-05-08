@@ -1,4 +1,6 @@
 #include "task.h"
+
+#include "ILI9341_STM32_Driver.h"
 #include "os.h"
 #include "stm32f4xx_it.h"
 
@@ -6,7 +8,7 @@ void idle_task_func(void *param)
 {
 	 while (1)
 	 {
-		  ;
+		  ILI9341_FillScreen(WHITE);
 	 }
 }
 

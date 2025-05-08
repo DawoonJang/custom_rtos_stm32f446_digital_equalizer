@@ -32,7 +32,6 @@ static void ILI9341_SPI_TxBuffer(const uint8_t *const buffer, const uint16_t len
 	 while (!__HAL_SPI_GET_FLAG(HSPI_INSTANCE, SPI_FLAG_TXE))
 		  ;
 	 HAL_SPI_Transmit_DMA(HSPI_INSTANCE, buffer, len);
-	 // HAL_SPI_Transmit(HSPI_INSTANCE, buffer, len, 10);
 }
 
 void ILI9341_WriteCommand(const uint8_t cmd)

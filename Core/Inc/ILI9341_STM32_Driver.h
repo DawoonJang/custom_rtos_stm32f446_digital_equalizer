@@ -47,7 +47,7 @@ void ILI9341_WriteCommand(uint8_t cmd);
 
 void ILI9341_WriteData(uint8_t data);
 
-void ILI9341_WriteBuffer(uint8_t *buffer, uint16_t len);
+void ILI9341_WriteBuffer(const uint8_t *const buffer, const uint16_t len);
 
 void ILI9341_Reset(void);
 

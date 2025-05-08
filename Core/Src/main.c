@@ -68,7 +68,7 @@ uint8_t task3_id;
 
 // RNG_HandleTypeDef hrng;
 //
-// SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef hspi1;
 // DMA_HandleTypeDef hdma_spi1_tx;
 
 /* USER CODE END 0 */
