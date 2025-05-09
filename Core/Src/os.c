@@ -321,23 +321,17 @@ void blocked_cur_task(const E_TaskBlockedReason blocked_reason, const uint32_t t
 
 uint8_t wait_signal(uint32_t *const pdata, const uint32_t timeout)
 {
+
 	 disable_interrupts();
-
-
 	 blocked_cur_task(BLOCKED_WAIT_SIGNAL, timeout);
-
-	 enable_interrupts();
 	 trigger_context_switch();
+	 enable_interrupts();
 
-	 if (current_task_ptr->blocked_reason == BLOCKED_NONE)
-	 {
-		  return false; // timeout 등으로 신호 못 받은 경우
-	 }
+	 E_TaskBlockedReason initial_blocked_reason = current_task_ptr->blocked_reason;
+	 current_task_ptr->blocked_reason			  = BLOCKED_NONE;
+	 *pdata												  = current_task_ptr->received_signal;
 
-	 *pdata									 = current_task_ptr->received_signal;
-	 current_task_ptr->blocked_reason = BLOCKED_NONE;
-
-	 return true; // 신호 잘 받았다는 의미
+	 return (initial_blocked_reason == current_task_ptr->blocked_reason);
 }
 
 void send_signal(const uint8_t dest_task_id, const uint32_t signal)

@@ -95,7 +95,9 @@ int main(void)
 	 SystemClock_Config();
 
 	 /* USER CODE BEGIN SysInit */
+	 init_os();
 
+	 ILI9341_Init();
 	 /* USER CODE END SysInit */
 
 	 /* Initialize all configured peripherals */
@@ -103,11 +105,10 @@ int main(void)
 	 MX_SPI2_Init();
 	 /* USER CODE BEGIN 2 */
 
-	 init_os();
 
 	 task1_id = create_task(led1_task_func, nullptr, PRIO_HIGHEST + 1, 1024);
 	 task2_id = create_task(led2_task_func, nullptr, PRIO_HIGHEST + 1, 1024);
-	 task3_id = create_task(led3_task_func, nullptr, PRIO_HIGHEST, 1024);
+	 task3_id = create_task(lcd_task_func, nullptr, PRIO_HIGHEST, 1024);
 
 	 start_os();
 
