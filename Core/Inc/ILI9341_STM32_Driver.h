@@ -14,8 +14,6 @@ extern SPI_HandleTypeDef hspi1;
 
 /* PIN Configuration */
 #define HSPI_INSTANCE &hspi1
-#define TFT_LED_GPIO_Port GPIOC
-#define TFT_RS_Pin GPIO_PIN_1
 
 #define BURST_MAX_SIZE 500
 #define BLACK 0x0000
