@@ -23,7 +23,8 @@
 #define __MAIN_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -32,25 +33,25 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32f446xx.h"
-/* USER CODE END Includes */
+	 /* USER CODE END Includes */
 
-/* Exported types ------------------------------------------------------------*/
-/* USER CODE BEGIN ET */
+	 /* Exported types ------------------------------------------------------------*/
+	 /* USER CODE BEGIN ET */
 
-/* USER CODE END ET */
+	 /* USER CODE END ET */
 
-/* Exported constants --------------------------------------------------------*/
-/* USER CODE BEGIN EC */
+	 /* Exported constants --------------------------------------------------------*/
+	 /* USER CODE BEGIN EC */
 
-/* USER CODE END EC */
+	 /* USER CODE END EC */
 
-/* Exported macro ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
+	 /* Exported macro ------------------------------------------------------------*/
+	 /* USER CODE BEGIN EM */
 
-/* USER CODE END EM */
+	 /* USER CODE END EM */
 
-/* Exported functions prototypes ---------------------------------------------*/
-void Error_Handler(void);
+	 /* Exported functions prototypes ---------------------------------------------*/
+	 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 
@@ -72,9 +73,10 @@ void Error_Handler(void);
 #define SWITCH1_GPIO_Port GPIOD
 #define SWITCH1_EXTI_IRQn EXTI2_IRQn
 
-/* USER CODE BEGIN Private defines */
-
-/* USER CODE END Private defines */
+	 /* USER CODE BEGIN Private defines */
+#define TFT_CS_Pin GPIO_PIN_12
+#define TFT_CS_GPIO_Port GPIOB
+	 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
 }

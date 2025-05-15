@@ -8,54 +8,56 @@
 volatile uint16_t LCD_HEIGHT = ILI9341_SCREEN_HEIGHT;
 volatile uint16_t LCD_WIDTH  = ILI9341_SCREEN_WIDTH;
 
-void HAL_SPI_TxCpltCallback(const SPI_HandleTypeDef *const hspi)
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 {
 	 /* Deselect when Tx Complete */
 	 if (hspi == HSPI_INSTANCE)
 	 {
-		  HAL_GPIO_WritePin(TFT_LED_GPIO_Port, TFT_LED_Pin, GPIO_PIN_SET);
+		  HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_SET);
 	 }
 }
 
 static void ILI9341_SPI_Tx(uint8_t data)
 {
 	 while (!__HAL_SPI_GET_FLAG(HSPI_INSTANCE, SPI_FLAG_TXE))
-	 {
 		  ;
-	 }
-
 	 HAL_SPI_Transmit_DMA(HSPI_INSTANCE, &data, 1);
+	 // HAL_SPI_Transmit(HSPI_INSTANCE, &data, 1, 10);
 }
 
-static void ILI9341_SPI_TxBuffer(const uint8_t *const buffer, const uint16_t len)
+static void ILI9341_SPI_TxBuffer(uint8_t *buffer, uint16_t len)
 {
 	 while (!__HAL_SPI_GET_FLAG(HSPI_INSTANCE, SPI_FLAG_TXE))
 		  ;
 	 HAL_SPI_Transmit_DMA(HSPI_INSTANCE, buffer, len);
+	 // HAL_SPI_Transmit(HSPI_INSTANCE, buffer, len, 10);
 }
 
-void ILI9341_WriteCommand(const uint8_t cmd)
+void ILI9341_WriteCommand(uint8_t cmd)
 {
-	 HAL_GPIO_WritePin(TFT_RS_GPIO_Port, TFT_RS_Pin, GPIO_PIN_RESET);	  // command
-	 HAL_GPIO_WritePin(TFT_LED_GPIO_Port, TFT_LED_Pin, GPIO_PIN_RESET); // select
+	 HAL_GPIO_WritePin(TFT_RS_GPIO_Port, TFT_RS_Pin, GPIO_PIN_RESET); // command
+	 HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_RESET); // select
 	 ILI9341_SPI_Tx(cmd);
+	 // HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_SET);	//deselect
 }
 
-void ILI9341_WriteData(const uint8_t data)
+void ILI9341_WriteData(uint8_t data)
 {
-	 HAL_GPIO_WritePin(TFT_RS_GPIO_Port, TFT_RS_Pin, GPIO_PIN_SET);	  // data
-	 HAL_GPIO_WritePin(TFT_LED_GPIO_Port, TFT_LED_Pin, GPIO_PIN_RESET); // select
+	 HAL_GPIO_WritePin(TFT_RS_GPIO_Port, TFT_RS_Pin, GPIO_PIN_SET);	// data
+	 HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_RESET); // select
 	 ILI9341_SPI_Tx(data);
+	 // HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_SET);	//deselect
 }
 
-void ILI9341_WriteBuffer(const uint8_t *const buffer, const uint16_t len)
+void ILI9341_WriteBuffer(uint8_t *buffer, uint16_t len)
 {
-	 HAL_GPIO_WritePin(TFT_RS_GPIO_Port, TFT_RS_Pin, GPIO_PIN_SET);	  // data
-	 HAL_GPIO_WritePin(TFT_LED_GPIO_Port, TFT_LED_Pin, GPIO_PIN_RESET); // select
+	 HAL_GPIO_WritePin(TFT_RS_GPIO_Port, TFT_RS_Pin, GPIO_PIN_SET);	// data
+	 HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_RESET); // select
 	 ILI9341_SPI_TxBuffer(buffer, len);
+	 // HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_SET);	//deselect
 }
 
-void ILI9341_SetAddress(const uint16_t x1, const uint16_t y1, const uint16_t x2, const uint16_t y2)
+void ILI9341_SetAddress(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
 	 uint8_t buffer[4];
 	 buffer[0] = x1 >> 8;
@@ -77,32 +79,31 @@ void ILI9341_SetAddress(const uint16_t x1, const uint16_t y1, const uint16_t x2,
 	 ILI9341_WriteCommand(0x2C);
 }
 
-// void ILI9341_Reset(void)
-// {
-// 	 HAL_GPIO_WritePin(TFT_RST_GPIO_Port, TFT_RST_Pin, GPIO_PIN_RESET); // Disable
-// 	 HAL_Delay(10);
-// 	 HAL_GPIO_WritePin(TFT_LED_GPIO_Port, TFT_LED_Pin, GPIO_PIN_RESET); // Select
-// 	 HAL_Delay(10);
-// 	 HAL_GPIO_WritePin(TFT_RST_GPIO_Port, TFT_RST_Pin, GPIO_PIN_SET); // Enable
-// 	 HAL_GPIO_WritePin(TFT_LED_GPIO_Port, TFT_LED_Pin, GPIO_PIN_SET); // Deselect
-// }
 void ILI9341_Reset(void)
 {
-	 HAL_GPIO_WritePin(TFT_RST_GPIO_Port, TFT_RST_Pin, GPIO_PIN_RESET);
-	 HAL_Delay(50);
-	 HAL_GPIO_WritePin(TFT_RST_GPIO_Port, TFT_RST_Pin, GPIO_PIN_SET);
-	 HAL_Delay(120);
+	 HAL_GPIO_WritePin(TFT_RS_GPIO_Port, TFT_RST_Pin, GPIO_PIN_RESET); // Disable
+	 HAL_Delay(10);
+	 HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_RESET); // Select
+	 HAL_Delay(10);
+	 HAL_GPIO_WritePin(TFT_RS_GPIO_Port, TFT_RST_Pin, GPIO_PIN_SET); // Enable
+	 HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_SET);  // Deselect
+}
+
+void ILI9341_Enable(void)
+{
+	 HAL_GPIO_WritePin(TFT_RS_GPIO_Port, TFT_RST_Pin, GPIO_PIN_SET); // Enable
 }
 
 void ILI9341_Init(void)
 {
+	 ILI9341_Enable();
 	 ILI9341_Reset();
 
-	 // Software Reset
+	 // SOFTWARE RESET
 	 ILI9341_WriteCommand(0x01);
 	 HAL_Delay(10);
 
-	 // Power Control A
+	 // POWER CONTROL A
 	 ILI9341_WriteCommand(0xCB);
 	 ILI9341_WriteData(0x39);
 	 ILI9341_WriteData(0x2C);
@@ -110,100 +111,126 @@ void ILI9341_Init(void)
 	 ILI9341_WriteData(0x34);
 	 ILI9341_WriteData(0x02);
 
-	 // Power Control B
+	 // POWER CONTROL B
 	 ILI9341_WriteCommand(0xCF);
 	 ILI9341_WriteData(0x00);
 	 ILI9341_WriteData(0xC1);
 	 ILI9341_WriteData(0x30);
 
-	 // Driver Timing Control A
+	 // DRIVER TIMING CONTROL A
 	 ILI9341_WriteCommand(0xE8);
 	 ILI9341_WriteData(0x85);
 	 ILI9341_WriteData(0x00);
 	 ILI9341_WriteData(0x78);
 
-	 // Driver Timing Control B
+	 // DRIVER TIMING CONTROL B
 	 ILI9341_WriteCommand(0xEA);
 	 ILI9341_WriteData(0x00);
 	 ILI9341_WriteData(0x00);
 
-	 // Power On Sequence Control
+	 // POWER ON SEQUENCE CONTROL
 	 ILI9341_WriteCommand(0xED);
 	 ILI9341_WriteData(0x64);
 	 ILI9341_WriteData(0x03);
 	 ILI9341_WriteData(0x12);
 	 ILI9341_WriteData(0x81);
 
-	 // Pump Ratio Control
+	 // PUMP RATIO CONTROL
 	 ILI9341_WriteCommand(0xF7);
 	 ILI9341_WriteData(0x20);
 
-	 // Power Control
-	 ILI9341_WriteCommand(0xC0); // VRH
+	 // POWER CONTROL,VRH[5:0]
+	 ILI9341_WriteCommand(0xC0);
 	 ILI9341_WriteData(0x23);
 
-	 ILI9341_WriteCommand(0xC1); // SAP, BT
+	 // POWER CONTROL,SAP[2:0];BT[3:0]
+	 ILI9341_WriteCommand(0xC1);
 	 ILI9341_WriteData(0x10);
 
-	 // VCM Control
+	 // VCM CONTROL
 	 ILI9341_WriteCommand(0xC5);
 	 ILI9341_WriteData(0x3E);
 	 ILI9341_WriteData(0x28);
 
-	 ILI9341_WriteCommand(0xC7); // VCM Control 2
+	 // VCM CONTROL 2
+	 ILI9341_WriteCommand(0xC7);
 	 ILI9341_WriteData(0x86);
 
-	 // Memory Access Control
+	 // MEMORY ACCESS CONTROL
 	 ILI9341_WriteCommand(0x36);
 	 ILI9341_WriteData(0x48);
 
-	 // Pixel Format Set
+	 // PIXEL FORMAT
 	 ILI9341_WriteCommand(0x3A);
-	 ILI9341_WriteData(0x55); // 16bit/pixel
+	 ILI9341_WriteData(0x55);
 
-	 // Frame Rate Control
+	 // FRAME RATIO CONTROL, STANDARD RGB COLOR
 	 ILI9341_WriteCommand(0xB1);
 	 ILI9341_WriteData(0x00);
 	 ILI9341_WriteData(0x18);
 
-	 // Display Function Control
+	 // DISPLAY FUNCTION CONTROL
 	 ILI9341_WriteCommand(0xB6);
 	 ILI9341_WriteData(0x08);
 	 ILI9341_WriteData(0x82);
 	 ILI9341_WriteData(0x27);
 
-	 // 3Gamma Function Disable
+	 // 3GAMMA FUNCTION DISABLE
 	 ILI9341_WriteCommand(0xF2);
 	 ILI9341_WriteData(0x00);
 
-	 // Gamma Curve Selected
+	 // GAMMA CURVE SELECTED
 	 ILI9341_WriteCommand(0x26);
 	 ILI9341_WriteData(0x01);
 
-	 // Positive Gamma Correction
+	 // POSITIVE GAMMA CORRECTION
 	 ILI9341_WriteCommand(0xE0);
-	 uint8_t posGamma[15] = {0x0F, 0x31, 0x2B, 0x0C, 0x0E, 0x08, 0x4E, 0xF1, 0x37, 0x07, 0x10, 0x03, 0x0E, 0x09, 0x00};
-	 for (int i = 0; i < 15; i++)
-		  ILI9341_WriteData(posGamma[i]);
+	 ILI9341_WriteData(0x0F);
+	 ILI9341_WriteData(0x31);
+	 ILI9341_WriteData(0x2B);
+	 ILI9341_WriteData(0x0C);
+	 ILI9341_WriteData(0x0E);
+	 ILI9341_WriteData(0x08);
+	 ILI9341_WriteData(0x4E);
+	 ILI9341_WriteData(0xF1);
+	 ILI9341_WriteData(0x37);
+	 ILI9341_WriteData(0x07);
+	 ILI9341_WriteData(0x10);
+	 ILI9341_WriteData(0x03);
+	 ILI9341_WriteData(0x0E);
+	 ILI9341_WriteData(0x09);
+	 ILI9341_WriteData(0x00);
 
-	 // Negative Gamma Correction
+	 // NEGATIVE GAMMA CORRECTION
 	 ILI9341_WriteCommand(0xE1);
-	 uint8_t negGamma[15] = {0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, 0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F};
-	 for (int i = 0; i < 15; i++)
-		  ILI9341_WriteData(negGamma[i]);
+	 ILI9341_WriteData(0x00);
+	 ILI9341_WriteData(0x0E);
+	 ILI9341_WriteData(0x14);
+	 ILI9341_WriteData(0x03);
+	 ILI9341_WriteData(0x11);
+	 ILI9341_WriteData(0x07);
+	 ILI9341_WriteData(0x31);
+	 ILI9341_WriteData(0xC1);
+	 ILI9341_WriteData(0x48);
+	 ILI9341_WriteData(0x08);
+	 ILI9341_WriteData(0x0F);
+	 ILI9341_WriteData(0x0C);
+	 ILI9341_WriteData(0x31);
+	 ILI9341_WriteData(0x36);
+	 ILI9341_WriteData(0x0F);
 
-	 // Exit Sleep Mode
+	 // EXIT SLEEP
 	 ILI9341_WriteCommand(0x11);
 	 HAL_Delay(100);
 
-	 // Display ON
+	 // TURN ON DISPLAY
 	 ILI9341_WriteCommand(0x29);
 
-	 // Set rotation
+	 // STARTING ROTATION
 	 ILI9341_SetRotation(SCREEN_VERTICAL_1);
 }
 
-void ILI9341_SetRotation(const uint8_t rotation)
+void ILI9341_SetRotation(uint8_t rotation)
 {
 	 ILI9341_WriteCommand(0x36);
 	 HAL_Delay(1);
@@ -235,13 +262,13 @@ void ILI9341_SetRotation(const uint8_t rotation)
 	 }
 }
 
-void ILI9341_DrawColor(const uint16_t color)
+void ILI9341_DrawColor(uint16_t color)
 {
 	 uint8_t buffer[2] = {color >> 8, color};
 	 ILI9341_WriteBuffer(buffer, sizeof(buffer));
 }
 
-void ILI9341_DrawColorBurst(const uint16_t color, const uint32_t size)
+void ILI9341_DrawColorBurst(uint16_t color, uint32_t size)
 {
 	 uint32_t BufferSize = 0;
 
@@ -255,10 +282,10 @@ void ILI9341_DrawColorBurst(const uint16_t color, const uint32_t size)
 	 }
 
 	 HAL_GPIO_WritePin(TFT_RS_GPIO_Port, TFT_RS_Pin, GPIO_PIN_SET);
-	 HAL_GPIO_WritePin(TFT_LED_GPIO_Port, TFT_LED_Pin, GPIO_PIN_RESET);
+	 HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_RESET);
 
-	 const uint8_t chifted = color >> 8;
-	 uint8_t			BurstBuffer[BufferSize];
+	 uint8_t chifted = color >> 8;
+	 uint8_t BurstBuffer[BufferSize];
 
 	 for (uint32_t j = 0; j < BufferSize; j += 2)
 	 {
@@ -266,9 +293,9 @@ void ILI9341_DrawColorBurst(const uint16_t color, const uint32_t size)
 		  BurstBuffer[j + 1] = color;
 	 }
 
-	 const uint32_t SendingSize		  = size * 2;
-	 const uint32_t SendingInBlock	  = SendingSize / BufferSize;
-	 const uint32_t RemainderFromBlock = SendingSize % BufferSize;
+	 uint32_t SendingSize		  = size * 2;
+	 uint32_t SendingInBlock	  = SendingSize / BufferSize;
+	 uint32_t RemainderFromBlock = SendingSize % BufferSize;
 
 	 if (SendingInBlock != 0)
 	 {
@@ -279,16 +306,16 @@ void ILI9341_DrawColorBurst(const uint16_t color, const uint32_t size)
 	 }
 
 	 HAL_SPI_Transmit(HSPI_INSTANCE, BurstBuffer, RemainderFromBlock, 10);
-	 HAL_GPIO_WritePin(TFT_LED_GPIO_Port, TFT_LED_Pin, GPIO_PIN_SET);
+	 HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_SET);
 }
 
-void ILI9341_FillScreen(const uint16_t color)
+void ILI9341_FillScreen(uint16_t color)
 {
 	 ILI9341_SetAddress(0, 0, LCD_WIDTH, LCD_HEIGHT);
 	 ILI9341_DrawColorBurst(color, LCD_WIDTH * LCD_HEIGHT);
 }
 
-void ILI9341_DrawPixel(const uint16_t x, const uint16_t y, const uint16_t color)
+void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color)
 {
 	 if ((x >= LCD_WIDTH) || (y >= LCD_HEIGHT))
 		  return;
@@ -307,7 +334,7 @@ void ILI9341_DrawPixel(const uint16_t x, const uint16_t y, const uint16_t color)
 	 ILI9341_WriteBuffer(bufferC, sizeof(bufferC)); // COLOR
 }
 
-void ILI9341_DrawRectangle(const uint16_t x, const uint16_t y, uint16_t width, uint16_t height, const uint16_t color)
+void ILI9341_DrawRectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color)
 {
 	 if ((x >= LCD_WIDTH) || (y >= LCD_HEIGHT))
 		  return;
@@ -326,7 +353,7 @@ void ILI9341_DrawRectangle(const uint16_t x, const uint16_t y, uint16_t width, u
 	 ILI9341_DrawColorBurst(color, height * width);
 }
 
-void ILI9341_DrawHLine(const uint16_t x, const uint16_t y, uint16_t width, const uint16_t color)
+void ILI9341_DrawHLine(uint16_t x, uint16_t y, uint16_t width, uint16_t color)
 {
 	 if ((x >= LCD_WIDTH) || (y >= LCD_HEIGHT))
 		  return;
@@ -340,7 +367,7 @@ void ILI9341_DrawHLine(const uint16_t x, const uint16_t y, uint16_t width, const
 	 ILI9341_DrawColorBurst(color, width);
 }
 
-void ILI9341_DrawVLine(const uint16_t x, const uint16_t y, uint16_t height, const uint16_t color)
+void ILI9341_DrawVLine(uint16_t x, uint16_t y, uint16_t height, uint16_t color)
 {
 	 if ((x >= LCD_WIDTH) || (y >= LCD_HEIGHT))
 		  return;

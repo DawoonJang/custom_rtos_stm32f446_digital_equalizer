@@ -101,8 +101,15 @@ void led3_task_func(void *param)
 
 void lcd_task_func(void *param)
 {
+	 static char BufferText[40];
+
+	 ILI9341_Init();
+	 ILI9341_SetRotation(SCREEN_HORIZONTAL_2);
+
 	 while (1)
 	 {
-		  TFT_DrawBox(50, 50, 100, 100, 0xF800);
+		  ILI9341_FillScreen(WHITE);
+		  ILI9341_DrawFilledRectangleCoord(50, 50, 100, 100, 0xF800);
+		  delay_task(1000);
 	 }
 }
