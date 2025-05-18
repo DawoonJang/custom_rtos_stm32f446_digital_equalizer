@@ -321,8 +321,9 @@ void blocked_cur_task(const E_TaskBlockedReason blocked_reason, const uint32_t t
 
 uint8_t wait_signal(uint32_t *const pdata, const uint32_t timeout)
 {
-
 	 disable_interrupts();
+	 *pdata = 0;
+
 	 blocked_cur_task(BLOCKED_WAIT_SIGNAL, timeout);
 	 trigger_context_switch();
 	 enable_interrupts();
@@ -330,6 +331,7 @@ uint8_t wait_signal(uint32_t *const pdata, const uint32_t timeout)
 	 E_TaskBlockedReason initial_blocked_reason = current_task_ptr->blocked_reason;
 	 current_task_ptr->blocked_reason			  = BLOCKED_NONE;
 	 *pdata												  = current_task_ptr->received_signal;
+	 current_task_ptr->received_signal			  = 0;
 
 	 return (initial_blocked_reason == current_task_ptr->blocked_reason);
 }

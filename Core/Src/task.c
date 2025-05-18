@@ -1,7 +1,7 @@
 #include "task.h"
-
 #include "ILI9341_GFX.h"
 #include "ILI9341_STM32_Driver.h"
+#include "main.h"
 #include "os.h"
 
 void idle_task_func(void *param)
@@ -54,13 +54,12 @@ void led2_task_func(void *param)
 
 void led3_task_func(void *param)
 {
-
-	 static uint8_t sw1_flag; // Flag for SW1 (NUM_LED5)
-	 static uint8_t sw2_flag; // Flag for SW2 (NUM_LED6)
+	 static uint8_t  sw1_flag; // Flag for SW1 (NUM_LED5)
+	 static uint8_t  sw2_flag; // Flag for SW2 (NUM_LED6)
+	 static uint32_t signal = 0;
 
 	 while (1)
 	 {
-		  uint32_t signal = 0;
 
 		  if (wait_signal(&signal, 2000))
 		  {
@@ -103,13 +102,14 @@ void lcd_task_func(void *param)
 {
 	 static char BufferText[40];
 
-	 ILI9341_Init();
-	 ILI9341_SetRotation(SCREEN_HORIZONTAL_2);
-
+	 // ILI9341_Init();
+	 // ILI9341_SetRotation(SCREEN_HORIZONTAL_2);
+	 // HAL_GPIO_WritePin(TFT_LED_GPIO_Port, TFT_LED_Pin, GPIO_PIN_SET);
+	 // ILI9341_FillScreen(GREEN);
+	 //
 	 while (1)
 	 {
-		  ILI9341_FillScreen(WHITE);
-		  ILI9341_DrawFilledRectangleCoord(50, 50, 100, 100, 0xF800);
+		  // ILI9341_DrawFilledRectangleCoord(50, 50, 100, 100, 0xF800);
 		  delay_task(1000);
 	 }
 }

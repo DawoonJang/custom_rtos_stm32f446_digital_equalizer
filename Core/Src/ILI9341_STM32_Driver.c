@@ -1,7 +1,3 @@
-//
-// Created by https://github.com/eziya/STM32_HAL_ILI9341/blob/master/Src/ILI9341_STM32_Driver.c
-//
-
 #include "ILI9341_STM32_Driver.h"
 #include "main.h"
 

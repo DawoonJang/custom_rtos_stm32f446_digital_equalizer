@@ -1,21 +1,21 @@
 /* USER CODE BEGIN Header */
 /**
- ******************************************************************************
- * @file           : main.h
- * @brief          : Header for main.c file.
- *                   This file contains the common defines of the application.
- ******************************************************************************
- * @attention
- *
- * Copyright (c) 2025 STMicroelectronics.
- * All rights reserved.
- *
- * This software is licensed under terms that can be found in the LICENSE file
- * in the root directory of this software component.
- * If no LICENSE file comes with this software, it is provided AS-IS.
- *
- ******************************************************************************
- */
+******************************************************************************
+* @file           : main.h
+* @brief          : Header for main.c file.
+*                   This file contains the common defines of the application.
+******************************************************************************
+* @attention
+*
+* Copyright (c) 2025 STMicroelectronics.
+* All rights reserved.
+*
+* This software is licensed under terms that can be found in the LICENSE file
+* in the root directory of this software component.
+* If no LICENSE file comes with this software, it is provided AS-IS.
+*
+******************************************************************************
+*/
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -23,8 +23,7 @@
 #define __MAIN_H
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -33,25 +32,25 @@ extern "C"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32f446xx.h"
-	 /* USER CODE END Includes */
+/* USER CODE END Includes */
 
-	 /* Exported types ------------------------------------------------------------*/
-	 /* USER CODE BEGIN ET */
+/* Exported types ------------------------------------------------------------*/
+/* USER CODE BEGIN ET */
 
-	 /* USER CODE END ET */
+/* USER CODE END ET */
 
-	 /* Exported constants --------------------------------------------------------*/
-	 /* USER CODE BEGIN EC */
+/* Exported constants --------------------------------------------------------*/
+/* USER CODE BEGIN EC */
 
-	 /* USER CODE END EC */
+/* USER CODE END EC */
 
-	 /* Exported macro ------------------------------------------------------------*/
-	 /* USER CODE BEGIN EM */
+/* Exported macro ------------------------------------------------------------*/
+/* USER CODE BEGIN EM */
 
-	 /* USER CODE END EM */
+/* USER CODE END EM */
 
-	 /* Exported functions prototypes ---------------------------------------------*/
-	 void Error_Handler(void);
+/* Exported functions prototypes ---------------------------------------------*/
+void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 
@@ -64,8 +63,8 @@ extern "C"
 #define TFT_RS_GPIO_Port GPIOC
 #define TFT_RST_Pin GPIO_PIN_2
 #define TFT_RST_GPIO_Port GPIOC
-#define LED7_Pin GPIO_PIN_3
-#define LED7_GPIO_Port GPIOC
+#define TFT_CS_Pin GPIO_PIN_3
+#define TFT_CS_GPIO_Port GPIOC
 #define SWITCH2_Pin GPIO_PIN_4
 #define SWITCH2_GPIO_Port GPIOA
 #define SWITCH2_EXTI_IRQn EXTI4_IRQn
@@ -73,10 +72,8 @@ extern "C"
 #define SWITCH1_GPIO_Port GPIOD
 #define SWITCH1_EXTI_IRQn EXTI2_IRQn
 
-	 /* USER CODE BEGIN Private defines */
-#define TFT_CS_Pin GPIO_PIN_12
-#define TFT_CS_GPIO_Port GPIOB
-	 /* USER CODE END Private defines */
+/* USER CODE BEGIN Private defines */
+/* USER CODE END Private defines */
 
 #ifdef __cplusplus
 }
